@@ -36,7 +36,7 @@ public class RockPaperSocketGUI {
 	}
 	
 	public static void main(String[] args) throws Exception {		
-		JFrame frame = new JFrame("RPS");
+		JFrame frame = new JFrame("Rock Paper Sockets");
 		frame.setMinimumSize(new Dimension(400, 100));
 		frame.setResizable(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,10 +55,10 @@ public class RockPaperSocketGUI {
 			options[2]);
 		
 		if(serverType == 0) {
-			frame.setTitle("RPS (Server)");
+			frame.setTitle("Rock Paper Sockets (Server)");
 			runServer();
 		} else if(serverType == 1) {
-			frame.setTitle("RPS (Client)");
+			frame.setTitle("Rock Paper Sockets (Client)");
 			runClient();
 		} else if(serverType == 2) {
 			runAlone();
@@ -132,6 +132,7 @@ public class RockPaperSocketGUI {
 			panel.addLine("Awaiting opponent's response...");
 			
 			String s = inFromClient.readLine();
+			panel.addLine("Client picked " + s);
 			
 			//Tell the client what was picked
 			outToClient.writeBytes(x + "\n");
@@ -215,6 +216,7 @@ public class RockPaperSocketGUI {
 			
 			panel.addLine("Awaiting opponent's response...");
 			s = inFromServer.readLine();
+			panel.addLine("Server picked " + s);
 			
 			s = inFromServer.readLine();
 			panel.addLine(s);
