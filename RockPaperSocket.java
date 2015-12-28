@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.Scanner;
+
 import java.io.*;
 import java.net.*;
 
@@ -101,6 +102,8 @@ public class RockPaperSocket {
 			System.out.println("\n");
 			String x = getValidString("Enter r, p, or s", "r", "p", "s");
 			
+			System.out.println("Awaiting opponent's response...");
+			
 			String s = inFromClient.readLine();
 			System.out.println("Client picked " + s);
 			
@@ -136,12 +139,12 @@ public class RockPaperSocket {
 	 * Attempts to establish a connection to the server.
 	 * @return The socket that was connected to, or null on failure
 	 */
-	private static Socket tryConnect() {
+	private static Socket tryConnect(String hostname) {
 		int tries = 0;
 		
 		while(tries < MAX_CONNECT_ATTEMPTS) {
 			try {
-				Socket s = new Socket("localhost", GAME_PORT);
+				Socket s = new Socket(hostname, GAME_PORT);
 				return s;
 			} catch (Exception e) {
 				tries++;
@@ -156,10 +159,12 @@ public class RockPaperSocket {
 	 * @throws Exception network failure
 	 */
 	private static void runClient() throws Exception {
-		System.out.println("Trying to connect to localhost on port " + GAME_PORT);
+		System.out.println("Enter the server IP address:");
+		String IPaddress = sn.nextLine();
+		System.out.println("Trying to connect to " + IPaddress + " on port " + GAME_PORT);
 		System.out.println("Waiting for server connection...");
+		Socket clientSocket = tryConnect(IPaddress);
 		
-		Socket clientSocket = tryConnect();
 		if(clientSocket == null) {
 			System.err.println("Failed to connect to server");
 			System.exit(0);
@@ -174,6 +179,8 @@ public class RockPaperSocket {
 			System.out.println("\n");
 			s = getValidString("Enter r, p, or s", "r", "p", "s");
 			outToServer.writeBytes(s + '\n');
+			
+			System.out.println("Awaiting opponent's response...");
 			
 			s = inFromServer.readLine();
 			System.out.println("Server picked " + s);
