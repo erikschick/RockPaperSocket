@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.Scanner;
 import java.io.*;
 import java.net.*;
@@ -6,23 +7,84 @@ public class RockPaperSocket {
 	private static String serverType = "";
 	private static Scanner sn = new Scanner(System.in);
 	private final static int GAME_PORT = 6789;
+	private final static int MAX_CONNECT_ATTEMPTS = 100;
+	
+	/**
+	 * Asks the user for input, repeats until valid input is given
+	 * @param message the message to ask
+	 * @param choices all valid choices
+	 * @return Valid user input
+	 */
+	private static String getValidString(String message, String... choices) {
+		String input = "";
+		while(true) {
+			System.out.println(message);
+			input = sn.nextLine();
+			for(String choice : choices) {
+				if(input.equals(choice)) {
+					return input;
+				}
+			}
+		}
+		
+	}
 	
 	public static void main(String[] args) throws Exception {
-		
-		while(!serverType.equals("s") && !serverType.equals("c")) {
-			System.out.println("Input s for server and c for client: ");
-			serverType = sn.nextLine().toLowerCase();
-		}
+		serverType = getValidString(
+				"Input s for server, c for client, or a for alone: ",
+				"s", "c" , "a");
 		
 		if(serverType.equals("s")) {
 			runServer();
 		} else if(serverType.equals("c")) {
 			runClient();
+		} else if(serverType.equals("a")) {
+			runAlone();
 		}
 		
 		sn.close();
 	}
 	
+	
+	/**
+	 * Single player mode, computer randomly selects enemy choice
+	 */
+	private static void runAlone() {
+		Random rand = new Random();
+		
+		while(true) {
+			System.out.println("\n");
+			String x = getValidString("Enter r, p, or s", "r", "p", "s");
+			
+			String choices[] = {"r", "p", "s"};
+			String s = choices[rand.nextInt(3)];
+			
+			System.out.println("Client picked " + s);
+			
+			
+			String winText = "";
+			if((x.equals("r") && s.equals("s")) || (x.equals("s") && s.equals("p"))
+					|| (x.equals("p") && s.equals("r"))) {
+				winText = "Winner is: Player!";
+			} else if (x.equals(s)){
+				winText = "Tie!";
+			} else {
+				winText = "Winner is: Computer!";
+			}
+			
+			System.out.println(winText);
+			
+			if(getValidString("Play again? (y/n): ", "y", "n").equals("n")) {
+				break;
+			}
+			System.out.println("\n\n");
+		}
+	}
+	
+	/**
+	 * Server mode, requires a client to connect
+	 * @throws Exception network failure
+	 */
 	private static void runServer() throws Exception {
 		System.out.println("Server: " + InetAddress.getLocalHost() + 
 							" on port: " + GAME_PORT);
@@ -36,8 +98,8 @@ public class RockPaperSocket {
 		
 		while(true) {
 			outToClient.writeBytes("Rock, Paper, Scissors!\n");
-			System.out.println("\nEnter r, p, or s");
-			String x = sn.nextLine();
+			System.out.println("\n");
+			String x = getValidString("Enter r, p, or s", "r", "p", "s");
 			
 			String s = inFromClient.readLine();
 			System.out.println("Client picked " + s);
@@ -57,10 +119,10 @@ public class RockPaperSocket {
 			System.out.println(winText);
 			outToClient.writeBytes(winText + "\n");
 			
-			System.out.print("Play again? (y/n): ");
-			if(!sn.nextLine().equals("y")) {
+			if(getValidString("Play again? (y/n): ", "y", "n").equals("n")) {
 				break;
 			}
+			
 			outToClient.writeBytes("1\n");
 			System.out.println("\n\n");
 		}
@@ -70,10 +132,14 @@ public class RockPaperSocket {
 		welcomeSocket.close();
 	}
 	
+	/**
+	 * Attempts to establish a connection to the server.
+	 * @return The socket that was connected to, or null on failure
+	 */
 	private static Socket tryConnect() {
 		int tries = 0;
 		
-		while(tries < 10000) {
+		while(tries < MAX_CONNECT_ATTEMPTS) {
 			try {
 				Socket s = new Socket("localhost", GAME_PORT);
 				return s;
@@ -81,18 +147,23 @@ public class RockPaperSocket {
 				tries++;
 			}
 		}
-		
-		
-		System.out.println("Connection failed: timeout");
-		System.exit(0);
-		return null; // This line is never reached
+		return null;
 	}
 	
+	
+	/**
+	 * Client mode, requires a server to connect to
+	 * @throws Exception network failure
+	 */
 	private static void runClient() throws Exception {
 		System.out.println("Trying to connect to localhost on port " + GAME_PORT);
 		System.out.println("Waiting for server connection...");
 		
 		Socket clientSocket = tryConnect();
+		if(clientSocket == null) {
+			System.err.println("Failed to connect to server");
+			System.exit(0);
+		}
 		DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 		BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 		
@@ -100,8 +171,8 @@ public class RockPaperSocket {
 			String s = inFromServer.readLine();
 			System.out.println("Message from server: " + s);
 			
-			System.out.println("\nEnter r, p, or s");
-			s = sn.nextLine();
+			System.out.println("\n");
+			s = getValidString("Enter r, p, or s", "r", "p", "s");
 			outToServer.writeBytes(s + '\n');
 			
 			s = inFromServer.readLine();
