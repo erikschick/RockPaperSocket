@@ -36,7 +36,7 @@ public class RockPaperSocketGUI {
 	}
 	
 	public static void main(String[] args) throws Exception {		
-		JFrame frame = new JFrame("Rock Paper Sockets");
+		JFrame frame = new JFrame("Rock Paper Socket");
 		frame.setMinimumSize(new Dimension(400, 100));
 		frame.setResizable(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,10 +55,10 @@ public class RockPaperSocketGUI {
 			options[2]);
 		
 		if(serverType == 0) {
-			frame.setTitle("Rock Paper Sockets (Server)");
+			frame.setTitle("Rock Paper Socket (Server)");
 			runServer();
 		} else if(serverType == 1) {
-			frame.setTitle("Rock Paper Sockets (Client)");
+			frame.setTitle("Rock Paper Socket (Client)");
 			runClient();
 		} else if(serverType == 2) {
 			runAlone();
